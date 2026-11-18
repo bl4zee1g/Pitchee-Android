@@ -70,6 +70,9 @@ internal fun PianoKeysScreen(onBack: () -> Unit) {
             columns = GridCells.Adaptive(minSize = 132.dp),
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+            // A drag while a key is held would scroll the grid and cancel that press,
+            // so scrolling is locked until every key is released.
+            userScrollEnabled = activeNotes.isEmpty(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {

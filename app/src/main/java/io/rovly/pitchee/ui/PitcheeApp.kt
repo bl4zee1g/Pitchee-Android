@@ -49,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -62,6 +63,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -206,6 +208,15 @@ fun PitcheeApp() {
         if (selectedIndex != currentIndex) selectedIndex = currentIndex
     }
     val dashboardScrollPosition = remember { DashboardScrollPosition() }
+    // Realtime pitch and analysis tabs are watched without touch input, so keep
+    // the screen awake while either is showing.
+    val view = LocalView.current
+    val keepScreenOn = destinations[currentIndex] == PitcheeDestination.PITCH ||
+        destinations[currentIndex] == PitcheeDestination.ANALYSIS
+    DisposableEffect(view, keepScreenOn) {
+        view.keepScreenOn = keepScreenOn
+        onDispose { view.keepScreenOn = false }
+    }
 
     LaunchedEffect(Unit) {
         updateViewModel.checkOnLaunch()
