@@ -70,9 +70,9 @@ internal fun PianoKeysScreen(onBack: () -> Unit) {
             columns = GridCells.Adaptive(minSize = 132.dp),
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
-            // A drag while a key is held would scroll the grid and cancel that press,
-            // so scrolling is locked until every key is released.
-            userScrollEnabled = activeNotes.isEmpty(),
+            // Two held keys mean two fingers; the grid's drag centroid jumps when a
+            // finger lands or lifts, so lock scrolling only in that case.
+            userScrollEnabled = activeNotes.size < 2,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -139,8 +139,13 @@ private fun PianoNoteButton(
                 detectTapGestures(
                     onPress = {
                         onPressChanged(true)
-                        tryAwaitRelease()
-                        onPressChanged(false)
+                        try {
+                            tryAwaitRelease()
+                        } finally {
+                            // Must run even if this gesture is cancelled, or the note stays
+                            // "held" and the grid stays unscrollable.
+                            onPressChanged(false)
+                        }
                     },
                 )
             },
